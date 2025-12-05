@@ -1,0 +1,79 @@
+pipeline {
+    agent any
+
+    environment {
+        S3_BUCKET = "serverlessapi12"
+        LAMBDA_ZIP = "main.zip"
+        AWS_REGION = "ap-south-1"
+    }
+
+    triggers {
+        githubPush()     // Trigger pipeline when GitHub pushes new code
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/Sharayu1707/Serverless-API-Deployment.git'
+            }
+        }
+
+        stage('Zip Lambda Code') {
+            steps {
+                sh '''
+                echo "Zipping Lambda function..."
+                cd lambda_function
+                zip -r ../main.zip .
+                cd ..
+                '''
+            }
+        }
+
+        stage('Upload ZIP to S3') {
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-key']
+                ]) {
+                    sh '''
+                    echo "Uploading Lambda ZIP to S3..."
+                    aws s3 cp main.zip s3://serverlessapi12/main.zip --region ap-south-1
+                    '''
+                }
+            }
+        }
+
+        stage('Terraform Init & Apply') {
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-key']
+                ]) {
+                    sh '''
+                    cd infra
+                    terraform init
+                    terraform apply -auto-approve
+                    '''
+                }
+            }
+        }
+
+        stage('Validate API Response') {
+            steps {
+                sh '''
+                echo "Testing API Gateway Endpoint..."
+                curl -i https://YOUR_API_URL.execute-api.ap-south-1.amazonaws.com/prod
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "🚀 Deployment Successful!"
+        }
+        failure {
+            echo "❌ Deployment Failed!"
+        }
+    }
+}
