@@ -74,7 +74,7 @@ Serverless-API-Deployment/
 
 Clone the repository:
 
-git clone https://github.com/Sharayu1707/Serverless-API-Deployment.git
+git clone https://github.com/Omkarpatange010/Serverless-Deployment-API-Using-AWS-Lambda.git
 
 cd Serverless-API-Deployment
 
