@@ -140,7 +140,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/Sharayu1707/Serverless-API-Deployment.git'
+                    url: 'https://github.com/Omkarpatange010/Serverless-Deployment-API-Using-AWS-Lambda.git'
             }
         }
 
